@@ -188,7 +188,7 @@ hpp::rbprm::contact::ContactReport ComputeContacts(const hpp::rbprm::State& prev
     body->device_->currentConfiguration(configuration);
     body->device_->computeForwardKinematics ();
     // try to maintain previous contacts
-    contact::ContactGenHelper cHelper(body,previous,configuration,affordances,affFilters,robustnessTreshold,1,1,false,
+    contact::ContactGenHelper cHelper(body,previous,configuration,affordances,affFilters,robustnessTreshold,0,2,false,
                                       true,direction,fcl::Vec3f(0,0,0),false,false);
     contact::ContactReport rep = contact::oneStep(cHelper);
 

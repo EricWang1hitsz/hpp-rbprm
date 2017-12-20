@@ -44,7 +44,7 @@ namespace hpp {
     bool RbPrmRomValidation::validate (const Configuration_t& config,
                     ValidationReportPtr_t& validationReport)
     {       
-				return !hpp::core::CollisionValidation::validate(config, validationReport);
+                return !hpp::core::CollisionValidation::validate(config, validationReport);
 		}
   }// namespace rbprm
 }// namespace hpp

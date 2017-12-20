@@ -347,9 +347,25 @@ sampling::T_OctreeReport CollideOctree(const ContactGenHelper &contactGenHelper,
       throw std::runtime_error ("No aff objects found!!!");
 
     std::vector<sampling::T_OctreeReport> reports(affordances.size());
+    int objNumber = 0;
     for(model::ObjectVector_t::const_iterator oit = affordances.begin();
         oit != affordances.end(); ++oit, ++i)
     {
+        // Mathieu: force contact sur les des surfaces specifiques
+        if (limbName == "hrp2_lleg_rom")
+        {
+            if ((*oit)->name()!="L/base_link_0")
+            {
+                continue;
+            }
+        }
+        if (limbName == "hrp2_rleg_rom")
+        {
+            if ((*oit)->name()!="R/base_link_0")
+            {
+                continue;
+            }
+        }
         if(eval)
             sampling::GetCandidates(limb->sampleContainer_, transform, *oit, contactGenHelper.direction_, reports[i], eval);
         else

@@ -139,6 +139,22 @@ namespace hpp {
         return filterMatch >= filter.size();
     }
 
+    bool RbPrmValidation::validateRoms(const core::Configuration_t& config,
+                      const std::vector<std::string>& filter, hpp::core::ValidationReportPtr_t &validationReport)
+    {
+        unsigned int filterMatch(0);
+        for(T_RomValidation::const_iterator cit = romValidations_.begin();
+            cit != romValidations_.end() && (filterMatch < 1 || filterMatch < filter.size()); ++cit)
+        {
+            if((filter.empty() || std::find(filter.begin(), filter.end(), cit->first) != filter.end())
+                    && cit->second->validate(config, validationReport))
+            {
+                ++filterMatch;
+            }
+        }
+        return filterMatch >= filter.size();
+    }
+
     bool RbPrmValidation::validateRoms(const core::Configuration_t& config)
     {
         return validateRoms(config,defaultFilter_);
@@ -169,7 +185,7 @@ namespace hpp {
                     const std::vector<std::string>& filter)
     {
         return trunkValidation_->validate(config, validationReport)
-                && validateRoms(config, filter);
+                && validateRoms(config, filter, validationReport);
     }
 
     void RbPrmValidation::addObstacle (const CollisionObjectPtr_t& object)
