@@ -427,7 +427,7 @@ namespace hpp {
       core::ValidationReportPtr_t report;
       //randomnize the collision pair, in order to get a different surface of contact each time
       // (because only the first one in collision is considered by fcl and put in the report)
-      rbprmPathValidation_->getValidator()->randomnizeCollisionPairs(); // FIXME : remove if we compute all collision pairs
+      //rbprmPathValidation_->getValidator()->randomnizeCollisionPairs(); // FIXME : remove if we compute all collision pairs
       rbprmPathValidation_->getValidator()->computeAllContacts(true);
       problem().configValidations()->validate(*(x->configuration()),report);
       rbprmPathValidation_->getValidator()->computeAllContacts(false);
