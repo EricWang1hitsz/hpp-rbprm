@@ -76,6 +76,9 @@ SET(${LIBRARY_NAME}_SOURCES
         dynamic/dynamic-path-validation.cc ${PROJECT_SOURCE_DIR}/include/hpp/rbprm/dynamic/dynamic-path-validation.hh
         planner/random-shortcut-dynamic.cc ${PROJECT_SOURCE_DIR}/include/hpp/rbprm/planner/random-shortcut-dynamic.hh
         planner/oriented-path-optimizer.cc ${PROJECT_SOURCE_DIR}/include/hpp/rbprm/planner/oriented-path-optimizer.hh
+        ${PROJECT_SOURCE_DIR}/include/hpp/rbprm/learning/GMM.hh
+        learning/learning-validation.cc ${PROJECT_SOURCE_DIR}/include/hpp/rbprm/learning/learning-validation.hh
+        learning/learning-path-validation.cc ${PROJECT_SOURCE_DIR}/include/hpp/rbprm/learning/learning-path-validation.hh
 
 
   )

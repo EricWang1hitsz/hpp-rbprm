@@ -117,6 +117,8 @@ SET(${PROJECT_NAME}_HEADERS
     include/utils/algorithms.h
     include/hpp/rbprm/dynamic/dynamic-validation.hh
     include/hpp/rbprm/dynamic/dynamic-path-validation.hh
+    include/hpp/rbprm/learning/learning-validation.hh
+    include/hpp/rbprm/learning/GMM.hh
     include/hpp/rbprm/planner/random-shortcut-dynamic.hh
     include/hpp/rbprm/planner/oriented-path-optimizer.hh
 
