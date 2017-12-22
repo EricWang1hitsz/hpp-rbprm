@@ -122,7 +122,7 @@ namespace hpp {
       hppDisplayBenchmark(PATH_VALIDATION);
     }
 
-    bool DynamicPathValidation::validate (const core::PathPtr_t& path, bool reverse,  core::PathPtr_t& validPart,  core::PathValidationReportPtr_t& validationReport){
+    bool LearningPathValidation::validate (const core::PathPtr_t& path, bool reverse,  core::PathPtr_t& validPart,  core::PathValidationReportPtr_t& validationReport){
       hppDout(info,"dynamic path validation called");
       hppDout(info,"path begin : "<<path->timeRange ().first);
       hppDout(info,"path end : "<<path->timeRange ().second);

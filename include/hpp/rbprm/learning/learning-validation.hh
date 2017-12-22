@@ -66,7 +66,7 @@ namespace hpp {
       void setInitialReport(core::ValidationReportPtr_t initialReport);
 
     protected:
-      DynamicValidation (GMM gmm);
+      LearningValidation (GMM gmm);
     private:
       GMM gmm_;
       core::RbprmValidationReportPtr_t lastReport_;
