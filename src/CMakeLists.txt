@@ -78,6 +78,7 @@ SET(${LIBRARY_NAME}_SOURCES
         planner/oriented-path-optimizer.cc ${PROJECT_SOURCE_DIR}/include/hpp/rbprm/planner/oriented-path-optimizer.hh
         ${PROJECT_SOURCE_DIR}/include/hpp/rbprm/learning/GMM.hh
         learning/learning-validation.cc ${PROJECT_SOURCE_DIR}/include/hpp/rbprm/learning/learning-validation.hh
+        learning/learning-node.cc ${PROJECT_SOURCE_DIR}/include/hpp/rbprm/learning/learning-node.hh
         #learning/learning-path-validation.cc ${PROJECT_SOURCE_DIR}/include/hpp/rbprm/learning/learning-path-validation.hh
 
 
