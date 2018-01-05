@@ -12,7 +12,7 @@ namespace geom
   {
     Point normal = (tri.p2 - tri.p1).cross(tri.p3 - tri.p1);
     normal.normalize();
-    hppDout(notice,"normal, in geom :: "<<normal);
+    hppDout(notice,"normal, in geom :: "<<normal.transpose());
     return normal;
   }
   

@@ -23,58 +23,71 @@
 #include <hpp/core/config-validation.hh>
 #include <hpp/rbprm/rbprm-validation-report.hh>
 #include <hpp/rbprm/learning/GMM.hh>
+#include <hpp/rbprm/rbprm-validation.hh>
 
 namespace hpp {
-  namespace rbprm {
+namespace rbprm {
 
 
-    /// Exception thrown when a configuration is not within the bounds
-    class LearningValidationReport : public core::ValidationReport
+/// Exception thrown when a configuration is not within the bounds
+class LearningValidationReport : public core::ValidationReport
+{
+
+public:
+    LearningValidationReport () : ValidationReport () {}
+    /// Print report in a stream
+    virtual std::ostream& print (std::ostream& os) const
     {
-    public:
-      LearningValidationReport () : ValidationReport () {}
-      /// Print report in a stream
-      virtual std::ostream& print (std::ostream& os) const
-      {
         os << "Learning report...";
         return os;
-      }
-    }; // class LearningValidationReport
+    }
+}; // class LearningValidationReport
 
 
 
-    HPP_PREDEF_CLASS(LearningValidation);
-    typedef boost::shared_ptr <LearningValidation> LearningValidationPtr_t;
+HPP_PREDEF_CLASS(LearningValidation);
+typedef boost::shared_ptr <LearningValidation> LearningValidationPtr_t;
 
-    class LearningValidation : public core::ConfigValidation
-    {
-    public:
-      static LearningValidationPtr_t LearningValidation::create (GMM gmm)
-      {
-        LearningValidation* ptr = new LearningValidation (gmm);
-        return LearningValidationPtr_t (ptr);
-      }
-      /// Compute whether the configuration is valid
-      ///
-      /// \param config the config to check for validity,
-      /// \retval validationReport report on validation. Must be a valid rbprmReport with the latest collision informations.
-      ///         If non valid, a new validation report will be allocated
-      ///         and returned via this shared pointer.
-      /// \return whether the whole config is valid.
-      virtual bool validate (const core::Configuration_t& config, core::ValidationReportPtr_t& validationReport);
+class LearningValidation : public rbprm::RbPrmValidation
+{
+    typedef rbprm::RbPrmValidation parent_t;
 
-      void setInitialReport(core::ValidationReportPtr_t initialReport);
+public:
 
-    protected:
-      LearningValidation (GMM gmm);
-    private:
-      GMM gmm_;
-      core::RbprmValidationReportPtr_t lastReport_;
-      bool initContacts_;
-    }; // class LearningValidation
+    static LearningValidationPtr_t create (GMMPtr_t gmm,
+                                           const model::RbPrmDevicePtr_t& robot,
+                                           const std::vector<std::string>& filter = std::vector<std::string>(),
+                                           const std::map<std::string, std::vector<std::string> >& affFilters =  std::map<std::string, std::vector<std::string> >(),
+                                           const std::map<std::string, std::vector<model::CollisionObjectPtr_t> >& affordances = std::map<std::string,                      std::vector<model::CollisionObjectPtr_t> >(),
+                                           const core::ObjectVector_t& geometries = core::ObjectVector_t());
 
 
-  } // namespace rbprm
+    /// \param config the config to check for validity,
+    /// \param filter specify constraints on all roms required to be in contact, will return
+    /// \param validationReport the report (can be cast to rbprmValidationReport) with info on the trunk and ROM states,
+    /// \return whether the whole config is valid.
+    virtual bool validateRoms(const core::Configuration_t& config,
+                      const std::vector<std::string>& filter,
+                       core::ValidationReportPtr_t &validationReport);
+
+protected:
+
+    LearningValidation (GMMPtr_t gmm,
+                        const model::RbPrmDevicePtr_t& robot,
+                        const std::vector<std::string>& filter,
+                        const std::map<std::string,
+                        std::vector<std::string> >& affFilters,
+                        const std::map<std::string,
+                        std::vector<model::CollisionObjectPtr_t> >& affordances,
+                        const core::ObjectVector_t& geometries);
+
+private:
+    GMMPtr_t gmm_;
+
+}; // class LearningValidation
+
+
+} // namespace rbprm
 } // namespace hpp
 
 #endif // HPP_RBPRM_LEARNING_VALIDATION_HH

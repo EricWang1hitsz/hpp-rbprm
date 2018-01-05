@@ -22,104 +22,203 @@
 # include <hpp/rbprm/planner/rbprm-node.hh>
 # include <hpp/model/configuration.hh>
 #include <hpp/util/timer.hh>
-
+#include "utils/algorithms.h"
 namespace hpp {
-  namespace rbprm {
+namespace rbprm {
 
-    bool LearningValidation::validate (const core::Configuration_t& config, core::ValidationReportPtr_t& validationReport){
-      //hppDout(notice,"Begin dynamic validation");
-     // hppStartBenchmark(DYNAMIC_VALIDATION);
-      // test if the same number of ROM are in collision :
-      core::RbprmValidationReportPtr_t rbReport = boost::dynamic_pointer_cast<core::RbprmValidationReport> (validationReport);
-      if(!rbReport){
-        hppDout(error,"error while casting the report");
-       // hppStopBenchmark(DYNAMIC_VALIDATION);
-        //hppDisplayBenchmark(DYNAMIC_VALIDATION);
-        return false;
-      }
-      if(lastReport_->ROMReports.size() != rbReport->ROMReports.size()){
-        //hppDout(notice,"dynamic validation : rom report not the same size");
-       // hppStopBenchmark(DYNAMIC_VALIDATION);
-       // hppDisplayBenchmark(DYNAMIC_VALIDATION);
-        return false;
-      }else{
-       // hppDout(notice,"dynamic validation : rom report have the same size");
-      }
-      bool sameContacts(true);
+struct SurfaceData{
 
-      for(std::map<std::string,core::CollisionValidationReportPtr_t>::const_iterator it = rbReport->ROMReports.begin() ; it != rbReport->ROMReports.end() ; ++it){
-        if(lastReport_->ROMReports.find(it->first) != lastReport_->ROMReports.end()){ // test if the same rom was in collision in init report
-         // hppDout(notice,"rom "<<it->first<<" is in both reports");
-          if(lastReport_->ROMReports.at(it->first)->object2 != it->second->object2){
-            //hppDout(notice,"detect contact change for rom : "<<it->first);
-            sameContacts=false;
-            break;
-          }else{
-           // hppDout(notice,"rom : "<<it->first<< " have the same contacts in both report");
-          }
-        }
-      }
-       // if !sameContact, compute new contacts infos and test acceleration
-      if(sameContacts && initContacts_){
-       // hppDout(notice,"initial contacts still active");
-       // hppStopBenchmark(DYNAMIC_VALIDATION);
-       // hppDisplayBenchmark(DYNAMIC_VALIDATION);
-        return true;
-      }
-      size_t configSize = config.size();
+    SurfaceData():normal_(),centroid_(),collisionObject_(),intersection_()
+    {}
 
-      if(sameContacts){ // new contacts already computed
-        if(config.segment<3>(configSize-3) == lastAcc_){
-         // hppDout(notice,"this acceleration is already verified");
-        //  hppStopBenchmark(DYNAMIC_VALIDATION);
-        //  hppDisplayBenchmark(DYNAMIC_VALIDATION);
-          return true;
-        }else{ // new acceleration, check if valid
-          lastAcc_ = config.segment<3>(configSize-3);
-          bool aValid = sEq_->checkAdmissibleAcceleration(H_,h_,lastAcc_);
-         // hppDout(notice,"new acceleration : "<<lastAcc_.transpose()<<", valid = "<<aValid);
-        //  hppStopBenchmark(DYNAMIC_VALIDATION);
-        //  hppDisplayBenchmark(DYNAMIC_VALIDATION);
-          return aValid;
-        }
-      }else{ // changes in contacts, recompute the matrices and check the acceleration :
-        initContacts_ = false;
-        //hppDout(notice,"new contacts ! for config = "<<model::displayConfig(config));
-        lastAcc_ = config.segment<3>(configSize-3);
-        lastReport_=rbReport;
-        core::ConfigurationPtr_t q = core::ConfigurationPtr_t (new core::Configuration_t(config));
-        core::RbprmNode node(q);
-        node.fillNodeMatrices(rbReport,rectangularContact_,sizeFootX_,sizeFootY_,mass_,mu_);
-        sEq_->setG(node.getG());
-        h_=node.geth();
-        H_=node.getH();
-       // hppDout(notice,"fill matrices OK, test acceleration : ");
+    SurfaceData(geom::Point normal, geom::Point centroid, model::CollisionObjectPtr_t collisionObject, geom::T_Point intersection)
+        : normal_(normal),centroid_(centroid),collisionObject_(collisionObject),intersection_(intersection)
+    {}
 
-        // test the acceleration
-        bool aValid = sEq_->checkAdmissibleAcceleration(H_,h_,lastAcc_);
-       // hppDout(notice,"new acceleration : "<<lastAcc_.transpose()<<", valid = "<<aValid);
-       // hppStopBenchmark(DYNAMIC_VALIDATION);
-      //  hppDisplayBenchmark(DYNAMIC_VALIDATION);
-        return aValid;
-      }
+    geom::Point normal_;
+    geom::Point centroid_;
+    model::CollisionObjectPtr_t collisionObject_;
+    geom::T_Point intersection_;
 
-    }
+};
 
-    void LearningValidation::setInitialReport(core::ValidationReportPtr_t initialReport){
-      core::RbprmValidationReportPtr_t rbReport = boost::dynamic_pointer_cast<core::RbprmValidationReport> (initialReport);
-      if(rbReport){
-        lastReport_ = rbReport;
-        initContacts_=true;
-      }
-      else
-        hppDout(error,"Error while casting rbprmReport");
-    }
+typedef std::list<SurfaceData> SurfaceDatas_t;
 
-    LearningValidation::LearningValidation (GMM gmm) : gmm_(gmm)
+LearningValidationPtr_t LearningValidation::create(GMMPtr_t gmm,
+const model::RbPrmDevicePtr_t& robot,
+const std::vector<std::string>& filter,
+const std::map<std::string, std::vector<std::string> >& affFilters,
+const std::map<std::string, std::vector<model::CollisionObjectPtr_t> >& affordances,
+const core::ObjectVector_t& geometries)
+{
+    LearningValidation* ptr = new LearningValidation (gmm,robot, filter, affFilters,
+                                                      affordances, geometries);
+    return LearningValidationPtr_t (ptr);
+}
+
+
+LearningValidation::LearningValidation (GMMPtr_t gmm,
+                                        const model::RbPrmDevicePtr_t& robot,
+                                        const std::vector<std::string>& filter,
+                                        const std::map<std::string,std::vector<std::string> >& affFilters,
+                                        const std::map<std::string,
+                                        std::vector<model::CollisionObjectPtr_t> >& affordances,
+                                        const core::ObjectVector_t& geometries)
+    :parent_t(robot, filter, affFilters,affordances, geometries)
+    ,gmm_(gmm)
+{
+
+}
+
+geom::T_Point displayCollisionObjectVertices(const std::string& nameObj,geom::BVHModelOBConst_Ptr_t model){
+    geom::T_Point vertices;
+    std::ostringstream ss;
+    ss<<"[";
+    for(int i = 0 ; i < model->num_vertices ; ++i)
     {
-      hppDout(info,"Learning validation created");
+      vertices.push_back(Eigen::Vector3d(model->vertices[i][0], model->vertices[i][1], model->vertices[i][2]));
+      ss<<"["<<model->vertices[i][0]<<","<<model->vertices[i][1]<<","<<model->vertices[i][2]<<"]";
+      if(i< (model->num_vertices-1))
+        ss<<",";
+    }
+    ss<<"]";
+    hppDout(info,"vertices of object : "<<nameObj<< " ( "<<model->num_vertices<<" ) ");
+    hppDout(notice,""<<ss.str());
+    return vertices;
+}
+
+std::string displayPoints(geom::T_Point points){
+    std::ostringstream ss;
+    ss<<"[";
+
+    for(geom::CIT_Point ip = points.begin() ; ip != points.end() ; ++ip){
+        ss<<"["<<(*ip)[0]<<","<<(*ip)[1]<<","<<(*ip)[2]<<"],";
     }
 
+    ss<<"]";
+    return ss.str();
+}
 
-  }//rbprm
+SurfaceDatas_t computeSurfaceData(core::AllCollisionsValidationReportPtr_t romReport){
+    SurfaceDatas_t surfaces;
+    hppDout(notice,"There is "<<romReport->collisionReports.size()<<" object in collision with the ROM");
+    std::ostringstream ssCenters;
+    ssCenters<<"[";
+    for(std::vector<core::CollisionValidationReportPtr_t>::const_iterator itCollision = romReport->collisionReports.begin() ; itCollision != romReport->collisionReports.end() ; ++itCollision){ // for all avoidance object in collision with the ROM
+        core::CollisionObjectPtr_t obj1 = (*itCollision)->object1; // should be the rom
+        core::CollisionObjectPtr_t obj2 = (*itCollision)->object2; // should be the environnement
+        hppDout(notice,"collision between : "<<obj1->name() << " and "<<obj2->name());
+        fcl::CollisionResult result = (*itCollision)->result;
+
+
+        // ##  get intersection between the two objects :
+        geom::BVHModelOBConst_Ptr_t model1 =  geom::GetModel(obj1->fcl());
+        geom::BVHModelOBConst_Ptr_t model2 =  geom::GetModel(obj2->fcl());
+        displayCollisionObjectVertices(obj1->name(),model1); // DEBUG only
+        displayCollisionObjectVertices(obj2->name(),model2);
+
+        geom::Point pn; // plan normal
+        geom::T_Point plane = geom::intersectPolygonePlane(model1,model2,pn);
+
+        geom::T_Point hull; // convex hull of the plane
+        if(plane.size() > 0){
+          hull = geom::compute3DIntersection(plane,geom::convertBVH(model2));
+        }else{
+            hppDout(notice,"Error when computing plane.");
+        }
+
+        if(hull.size() > 0){
+            // compute center point of the hull
+            geom::Point center = geom::center(hull.begin(),hull.end());
+            SurfaceData data(pn,center,obj2,hull); // How can we be sure that obj2 is the environnement ?
+            surfaces.push_back(data);
+            hppDout(notice,"Add a Surface Data : ");
+            hppDout(notice,"Normal = "<<pn.transpose());
+            hppDout(notice,"center = ["<<center[0]<<","<<center[1]<<","<<center[2]<<"]");
+            ssCenters<<" ["<<center[0]<<","<<center[1]<<","<<center[2]<<"],";
+            hppDout(notice,"obj name : "<<obj2->name());
+            hppDout(notice,"intersection : "<<displayPoints(hull));
+        }else{
+            hppDout(notice,"Error when computing intersection.");
+        }
+
+
+
+    } // end for all collisions objects
+
+    hppDout(notice,"List of all centers for this limb : "<<ssCenters.str()<<"]");
+    return surfaces;
+}
+
+SurfaceDatas_t computeSurfaceDataForLimb(const std::string& limbName,core::RbprmValidationReportPtr_t rbReport){
+
+    if (rbReport->ROMFilters.find(limbName) == rbReport->ROMFilters.end()){
+        hppDout(notice,"Error : ROM report does not contain entry for limb : "<<limbName);
+        return SurfaceDatas_t();
+    }
+    if (rbReport->ROMFilters.at(limbName)){ // the ROM is in collision
+        core::AllCollisionsValidationReportPtr_t allCollisionReport = boost::dynamic_pointer_cast<core::AllCollisionsValidationReport>(rbReport->ROMReports.at(limbName));
+        if(allCollisionReport){
+            hppDout(notice,"Compute surface data for rom : "<<limbName);
+            return computeSurfaceData(allCollisionReport);
+        }else{
+            hppDout(notice,"Error : ROM report cannot be cast correctly. Have you correctly set computeALlCollisions(true) ?");
+            return SurfaceDatas_t();
+        }
+    }else{ // the ROM is not in collision
+        return SurfaceDatas_t();
+    }
+}
+
+
+bool LearningValidation::validateRoms(const core::Configuration_t& config,
+                  const std::vector<std::string>& filter,
+                   core::ValidationReportPtr_t &validationReport){
+    computeAllContacts(true);
+    parent_t::validateRoms(config,filter,validationReport);
+    core::RbprmValidationReportPtr_t rbReport = boost::dynamic_pointer_cast<core::RbprmValidationReport> (validationReport);
+    hppDout(notice,"[LEARNING] : begin validateRoms from learning-validation");
+    hppDout(notice,"For config "<<model::displayConfig(config));
+    // test validity of the given report :
+    if(!rbReport)
+    {
+      hppDout(error,"Learning validation : Validation Report cannot be cast");
+      return false;
+    }
+    if(rbReport->trunkInCollision)
+    {
+      hppDout(error,"Learning validation : trunk is in collision");
+      return false;
+    }
+    if(!rbReport->romsValid)
+    {
+      hppDout(error,"Learning validation : roms filter not respected");
+      return false;
+    }
+
+    SurfaceDatas_t surfaces;
+    for(T_RomValidation::const_iterator itVal = romValidations_.begin() ; itVal != romValidations_.end() ; ++itVal){ // iterate over all limbs
+        const std::string& itLimb(itVal->first);
+        surfaces = computeSurfaceDataForLimb(itLimb,rbReport);
+        if(surfaces.empty()){ // no collision or error (see logs)
+            // TODO ??
+            hppDout(notice,"No collisions or errors occured for limb : "<<itLimb);
+            return false;
+        }
+        hppDout(notice,"SurfacesData computed for limb : "<<itLimb<<"; number of surfaces : "<<surfaces.size());
+
+
+        // TODO : use 'surfaces' directly in the loop or store them in a map (keys = limbName) ?
+
+    } // end for all limbs
+
+
+
+    return rbReport->romsValid; // TODO : remove and replace with test with learning
+}
+
+
+
+
+}//rbprm
 }//hpp
