@@ -62,6 +62,13 @@ public:
                                            const core::ObjectVector_t& geometries = core::ObjectVector_t());
 
 
+    /// \param config the config to check for validity,
+    /// \param filter specify constraints on all roms required to be in contact, will return
+    /// \param validationReport the report (can be cast to rbprmValidationReport) with info on the trunk and ROM states,
+    /// \return whether the whole config is valid.
+    virtual bool validateRoms(const core::Configuration_t& config,
+                      const std::vector<std::string>& filter,
+                       core::ValidationReportPtr_t &validationReport);
 
 protected:
 

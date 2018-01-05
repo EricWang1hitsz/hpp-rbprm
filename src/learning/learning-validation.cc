@@ -53,6 +53,12 @@ LearningValidation::LearningValidation (GMM gmm,
 
 }
 
+bool LearningValidation::validateRoms(const core::Configuration_t& config,
+                  const std::vector<std::string>& filter,
+                   core::ValidationReportPtr_t &validationReport){
+parent_t::validateRoms(config,filter,validationReport);
+}
+
 
 
 

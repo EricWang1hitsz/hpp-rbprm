@@ -24,6 +24,7 @@
 #include <Eigen/Geometry>
 #include <hpp/model/configuration.hh>
 #include <hpp/util/timer.hh>
+#include <hpp/rbprm/learning/learning-validation.hh>
 
 namespace hpp {
 using namespace core;
@@ -173,7 +174,8 @@ namespace
 
   namespace rbprm {
 
-    RbPrmShooterPtr_t RbPrmShooter::create (const model::RbPrmDevicePtr_t& robot,
+    RbPrmShooterPtr_t RbPrmShooter::create (GMM gmm,
+                                            const model::RbPrmDevicePtr_t& robot,
                                             const ObjectVector_t& geometries,
 																						const affMap_t& affordances,
                                             const std::vector<std::string>& filter,
@@ -210,7 +212,7 @@ namespace
       srand (seed);
       hppDout(notice,"&&&&&& SEED = "<<seed);
       std::cout<<"seed = "<<seed<<std::endl;
-      RbPrmShooter* ptr = new RbPrmShooter (robot, geometries, affordances,
+      RbPrmShooter* ptr = new RbPrmShooter (gmm,robot, geometries, affordances,
                                             filter, affFilters, shootLimit, displacementLimit);
 
 
@@ -233,9 +235,9 @@ namespace
 
 // TODO: outward
 
-    RbPrmShooter::RbPrmShooter (const model::RbPrmDevicePtr_t& robot,
+    RbPrmShooter::RbPrmShooter (GMM gmm, const model::RbPrmDevicePtr_t& robot,
                               const ObjectVector_t& geometries,
-															const affMap_t& affordances,
+                                                            const affMap_t& affordances,
                               const std::vector<std::string>& filter,
                               const std::map<std::string, std::vector<std::string> >& affFilters,
                               const std::size_t shootLimit,
@@ -244,8 +246,7 @@ namespace
     , displacementLimit_(displacementLimit)
     , filter_(filter)
     , robot_ (robot)
-    , validator_(rbprm::RbPrmValidation::create(robot_, filter, affFilters,
-																								affordances, geometries))
+    , validator_(rbprm::LearningValidation::create(gmm,robot_, filter, affFilters,affordances, geometries))
     , eulerSo3_(initSo3())
     {
         for(hpp::core::ObjectVector_t::const_iterator cit = geometries.begin();
