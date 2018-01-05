@@ -23,6 +23,8 @@
 # include <hpp/model/configuration.hh>
 #include <hpp/util/timer.hh>
 #include "utils/algorithms.h"
+#include <math.h>
+
 namespace hpp {
 namespace rbprm {
 
@@ -170,11 +172,49 @@ SurfaceDatas_t computeSurfaceDataForLimb(const std::string& limbName,core::Rbprm
     }
 }
 
+typedef std::pair<double, double> RollPitch;
+RollPitch getRollPitchFromNormal(Eigen::Vector3d normal)
+{
+    double pitch = asin(normal[0]);
+    double roll = acos(normal[2]/cos(pitch));
+    return RollPitch(roll, pitch);
+}
+
+
+Eigen::Matrix<double, 9, 1> getInputVector(const std::map<std::string, SurfaceDatas_t>& map, const core::Configuration_t& config)
+{
+    Eigen::Matrix<double, 9, 1> res;
+
+    Eigen::Vector3d posRob, posLeft, posRight, normalLeft, normalRight, diffLeft, diffRight;
+
+    posRob << config.head<3>();
+    posLeft = map.find(std::string("hrp2_lleg_rom"))->second.front().centroid_;
+    posRight = map.find(std::string("hrp2_rleg_rom"))->second.front().centroid_;
+    normalLeft = map.find(std::string("hrp2_lleg_rom"))->second.front().normal_;
+    normalRight = map.find(std::string("hrp2_rleg_rom"))->second.front().normal_;
+
+    double rollLeft = -asin(normalLeft[1]);
+    double rollRight = -asin(normalRight[1]);
+
+    Eigen::Matrix3d matLeft;
+    matLeft = Eigen::AngleAxisd(rollLeft, Eigen::Vector3d::UnitX());
+    Eigen::Matrix3d matRight;
+    matRight = Eigen::AngleAxisd(rollRight, Eigen::Vector3d::UnitX());
+
+    diffLeft = matLeft*diffLeft;
+    diffRight = matRight*diffRight;
+
+    res << 0., diffLeft[2], rollLeft, diffLeft[0], diffLeft[1], diffRight[2], rollRight, diffRight[0], diffRight[1];
+
+    return res;
+}
+
 
 bool LearningValidation::validateRoms(const core::Configuration_t& config,
                   const std::vector<std::string>& filter,
                    core::ValidationReportPtr_t &validationReport){
-    computeAllContacts(true);
+    randomnizeCollisionPairs();
+//    computeAllContacts(true);
     parent_t::validateRoms(config,filter,validationReport);
     core::RbprmValidationReportPtr_t rbReport = boost::dynamic_pointer_cast<core::RbprmValidationReport> (validationReport);
     hppDout(notice,"[LEARNING] : begin validateRoms from learning-validation");
@@ -196,11 +236,11 @@ bool LearningValidation::validateRoms(const core::Configuration_t& config,
       return false;
     }
 
-    SurfaceDatas_t surfaces;
+    std::map<std::string, SurfaceDatas_t> map;
     for(T_RomValidation::const_iterator itVal = romValidations_.begin() ; itVal != romValidations_.end() ; ++itVal){ // iterate over all limbs
         const std::string& itLimb(itVal->first);
-        surfaces = computeSurfaceDataForLimb(itLimb,rbReport);
-        if(surfaces.empty()){ // no collision or error (see logs)
+        map.insert(std::pair<std::string, SurfaceDatas_t>(itLimb, computeSurfaceDataForLimb(itLimb,rbReport)));
+        if(map.find(itLimb)->second.empty()){ // no collision or error (see logs)
             // TODO ??
             hppDout(notice,"No collisions or errors occured for limb : "<<itLimb);
             return false;
@@ -212,9 +252,18 @@ bool LearningValidation::validateRoms(const core::Configuration_t& config,
 
     } // end for all limbs
 
+    Eigen::Matrix<double, 9, 1> input = Eigen::Matrix<double, 9, 1>::Zero(9,1);
+    input = getInputVector(map, config);
 
+    Eigen::VectorXd res = gmm_->pdf(input);
+    double score = res[0];
+    hppDout(notice,"Get score = " << score);
 
-    return rbReport->romsValid; // TODO : remove and replace with test with learning
+    bool success=false;
+    if (score>1.)
+        success=true;
+
+    return true; // TODO : remove and replace with test with learning
 }
 
 
