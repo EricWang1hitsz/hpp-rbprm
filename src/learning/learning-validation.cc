@@ -43,7 +43,7 @@ struct surfaceData{
 
 typedef std::list<surfaceData> surfaceDatas_t;
 
-LearningValidationPtr_t LearningValidation::create(GMM gmm,
+LearningValidationPtr_t LearningValidation::create(GMMPtr_t gmm,
 const model::RbPrmDevicePtr_t& robot,
 const std::vector<std::string>& filter,
 const std::map<std::string, std::vector<std::string> >& affFilters,
@@ -56,7 +56,7 @@ const core::ObjectVector_t& geometries)
 }
 
 
-LearningValidation::LearningValidation (GMM gmm,
+LearningValidation::LearningValidation (GMMPtr_t gmm,
                                         const model::RbPrmDevicePtr_t& robot,
                                         const std::vector<std::string>& filter,
                                         const std::map<std::string,std::vector<std::string> >& affFilters,

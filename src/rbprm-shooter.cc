@@ -174,10 +174,10 @@ namespace
 
   namespace rbprm {
 
-    RbPrmShooterPtr_t RbPrmShooter::create (GMM gmm,
+    RbPrmShooterPtr_t RbPrmShooter::create (GMMPtr_t gmm,
                                             const model::RbPrmDevicePtr_t& robot,
                                             const ObjectVector_t& geometries,
-																						const affMap_t& affordances,
+                                                                                        const affMap_t& affordances,
                                             const std::vector<std::string>& filter,
                                             const std::map<std::string, std::vector<std::string> >& affFilters,
                                             const std::size_t shootLimit, const std::size_t displacementLimit)
@@ -235,7 +235,7 @@ namespace
 
 // TODO: outward
 
-    RbPrmShooter::RbPrmShooter (GMM gmm, const model::RbPrmDevicePtr_t& robot,
+    RbPrmShooter::RbPrmShooter (GMMPtr_t gmm, const model::RbPrmDevicePtr_t& robot,
                               const ObjectVector_t& geometries,
                                                             const affMap_t& affordances,
                               const std::vector<std::string>& filter,

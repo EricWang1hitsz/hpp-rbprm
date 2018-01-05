@@ -61,7 +61,7 @@ public:
     /// \param displacementLimit maximum number of local displacements allowed for a shot configuration to try to verify
     /// the reachability condition.
     /// \return a pointer to an instance of RbPrmShooter
-    static HPP_RBPRM_DLLAPI RbPrmShooterPtr_t create (GMM gmm,
+    static HPP_RBPRM_DLLAPI RbPrmShooterPtr_t create (GMMPtr_t gmm,
                                                       const model::RbPrmDevicePtr_t& robot,
                                                       const core::ObjectVector_t &geometries,
                                                       const affMap_t& affordances,
@@ -91,7 +91,7 @@ public:
 
 protected:
     /// Note that translation joints have to be bounded.
-    RbPrmShooter (GMM gmm,
+    RbPrmShooter (GMMPtr_t gmm,
                   const model::RbPrmDevicePtr_t& robot,
                   const core::ObjectVector_t &geometries,
                   const affMap_t &affordances,

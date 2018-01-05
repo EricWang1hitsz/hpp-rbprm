@@ -54,7 +54,7 @@ class LearningValidation : public rbprm::RbPrmValidation
 
 public:
 
-    static LearningValidationPtr_t create (GMM gmm,
+    static LearningValidationPtr_t create (GMMPtr_t gmm,
                                            const model::RbPrmDevicePtr_t& robot,
                                            const std::vector<std::string>& filter = std::vector<std::string>(),
                                            const std::map<std::string, std::vector<std::string> >& affFilters =  std::map<std::string, std::vector<std::string> >(),
@@ -72,7 +72,7 @@ public:
 
 protected:
 
-    LearningValidation (GMM gmm,
+    LearningValidation (GMMPtr_t gmm,
                         const model::RbPrmDevicePtr_t& robot,
                         const std::vector<std::string>& filter,
                         const std::map<std::string,
@@ -82,7 +82,7 @@ protected:
                         const core::ObjectVector_t& geometries);
 
 private:
-    GMM gmm_;
+    GMMPtr_t gmm_;
 
 }; // class LearningValidation
 
