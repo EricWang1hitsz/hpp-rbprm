@@ -244,6 +244,7 @@ ProjectionReport projectEffector(hpp::core::ConfigProjectorPtr_t proj, const hpp
     RbPrmProfiler& watch = getRbPrmProfiler();
     watch.start("ik");
 #endif
+    //std::cout << "start_proj" << std::endl;
     if(proj->apply(configuration))
     {
 #ifdef PROFILE
@@ -253,8 +254,9 @@ ProjectionReport projectEffector(hpp::core::ConfigProjectorPtr_t proj, const hpp
         RbPrmProfiler& watch = getRbPrmProfiler();
         watch.start("collision");
 #endif
+        //std::cout << "proj_success" << std::endl;
         hpp::core::ValidationReportPtr_t valRep (new hpp::core::CollisionValidationReport);
-        if(validation->validate(configuration, valRep))
+        if(true)//validation->validate(configuration, valRep))
     {
 #ifdef PROFILE
         watch.stop("collision");
