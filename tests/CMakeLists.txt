@@ -47,7 +47,7 @@ MACRO(ADD_TESTCASE NAME GENERATED)
   TARGET_LINK_LIBRARIES(${NAME}
     ${Boost_LIBRARIES}
     ${PROJECT_NAME}
-    robust-equilibrium-lib
+    centroidal-dynamics-lib
     )
 
 ENDMACRO(ADD_TESTCASE)
