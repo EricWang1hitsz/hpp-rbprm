@@ -28,23 +28,6 @@
 namespace hpp {
 namespace rbprm {
 
-struct SurfaceData{
-
-    SurfaceData():normal_(),centroid_(),collisionObject_(),intersection_()
-    {}
-
-    SurfaceData(geom::Point normal, geom::Point centroid, model::CollisionObjectPtr_t collisionObject, geom::T_Point intersection)
-        : normal_(normal),centroid_(centroid),collisionObject_(collisionObject),intersection_(intersection)
-    {}
-
-    geom::Point normal_;
-    geom::Point centroid_;
-    model::CollisionObjectPtr_t collisionObject_;
-    geom::T_Point intersection_;
-
-};
-
-typedef std::list<SurfaceData> SurfaceDatas_t;
 
 LearningValidationPtr_t LearningValidation::create(GMMPtr_t gmm,
 const model::RbPrmDevicePtr_t& robot,
@@ -196,6 +179,9 @@ Eigen::Matrix<double, 9, 1> getInputVector(const std::map<std::string, SurfaceDa
     double rollLeft = -asin(normalLeft[1]);
     double rollRight = -asin(normalRight[1]);
 
+    diffLeft = posLeft - posRob;
+    diffRight = posRight - posRob;
+
     Eigen::Matrix3d matLeft;
     matLeft = Eigen::AngleAxisd(rollLeft, Eigen::Vector3d::UnitX());
     Eigen::Matrix3d matRight;
@@ -214,7 +200,7 @@ bool LearningValidation::validateRoms(const core::Configuration_t& config,
                   const std::vector<std::string>& filter,
                    core::ValidationReportPtr_t &validationReport){
     randomnizeCollisionPairs();
-//    computeAllContacts(true);
+    computeAllContacts(true);
     parent_t::validateRoms(config,filter,validationReport);
     core::RbprmValidationReportPtr_t rbReport = boost::dynamic_pointer_cast<core::RbprmValidationReport> (validationReport);
     hppDout(notice,"[LEARNING] : begin validateRoms from learning-validation");
@@ -239,7 +225,8 @@ bool LearningValidation::validateRoms(const core::Configuration_t& config,
     std::map<std::string, SurfaceDatas_t> map;
     for(T_RomValidation::const_iterator itVal = romValidations_.begin() ; itVal != romValidations_.end() ; ++itVal){ // iterate over all limbs
         const std::string& itLimb(itVal->first);
-        map.insert(std::pair<std::string, SurfaceDatas_t>(itLimb, computeSurfaceDataForLimb(itLimb,rbReport)));
+        std::pair<std::string, SurfaceDatas_t> pair(itLimb, computeSurfaceDataForLimb(itLimb,rbReport));
+        map.insert(pair);
         if(map.find(itLimb)->second.empty()){ // no collision or error (see logs)
             // TODO ??
             hppDout(notice,"No collisions or errors occured for limb : "<<itLimb);
@@ -252,18 +239,21 @@ bool LearningValidation::validateRoms(const core::Configuration_t& config,
 
     } // end for all limbs
 
+    //Compute only for first object collision
     Eigen::Matrix<double, 9, 1> input = Eigen::Matrix<double, 9, 1>::Zero(9,1);
     input = getInputVector(map, config);
+
+    std::cout << "input: " << input << std::endl;
 
     Eigen::VectorXd res = gmm_->pdf(input);
     double score = res[0];
     hppDout(notice,"Get score = " << score);
-
+    std::cout << "score: " << score << std::endl;
     bool success=false;
     if (score>1.)
         success=true;
 
-    return true; // TODO : remove and replace with test with learning
+    return success; // TODO : remove and replace with test with learning
 }
 
 

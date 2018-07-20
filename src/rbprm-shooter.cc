@@ -113,9 +113,14 @@ namespace
                 joint->configuration()->uniformlySample (i, confso3);
                 joint = joint->numberChildJoints() > 0 ? joint->childJoint(0) : 0;
             }
-            Eigen::Quaterniond qt = Eigen::AngleAxisd(confso3(0), Eigen::Vector3d::UnitZ())
-              * Eigen::AngleAxisd(confso3(1), Eigen::Vector3d::UnitY())
-              * Eigen::AngleAxisd(confso3(2), Eigen::Vector3d::UnitX());
+//            Eigen::Quaterniond qt = Eigen::AngleAxisd(confso3(0), Eigen::Vector3d::UnitZ())
+//              * Eigen::AngleAxisd(confso3(1), Eigen::Vector3d::UnitY())
+//              * Eigen::AngleAxisd(confso3(2), Eigen::Vector3d::UnitX());
+
+            // Mathieu - delete freeflyer rotation.
+            Eigen::Quaterniond qt = Eigen::AngleAxisd(0., Eigen::Vector3d::UnitZ())
+              * Eigen::AngleAxisd(0., Eigen::Vector3d::UnitY())
+              * Eigen::AngleAxisd(0., Eigen::Vector3d::UnitX());
             std::size_t rank = 3;
             (*config)(rank+0) = qt.w();
             (*config)(rank+1) = qt.x();

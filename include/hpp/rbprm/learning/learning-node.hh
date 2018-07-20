@@ -13,14 +13,14 @@
 #include <hpp/fcl/intersect.h>
 #include <hpp/rbprm/planner/rbprm-node.hh>
 
+#include <hpp/rbprm/learning/learning-validation.hh>
+
 namespace hpp {
   namespace core {
 
     HPP_PREDEF_CLASS (LearningNode);
-    typedef LearningNode* LearningNodePtr_t;
+    typedef boost::shared_ptr <LearningNode> LearningNodePtr_t;
 
-    //Triplet collision object, surface normal, contact point.
-    typedef boost::tuple<CollisionObjectPtr_t, geom::Point , geom::Point> ContactSurface;
 
     class HPP_CORE_DLLAPI LearningNode : public Node
     {
@@ -35,39 +35,23 @@ namespace hpp {
       /// Constructor
       /// \param configuration configuration stored in the new node
       /// \param connectedComponent connected component the node belongs to.
-      RbprmNode (const ConfigurationPtr_t& configuration,
+      LearningNode (const ConfigurationPtr_t& configuration,
       ConnectedComponentPtr_t connectedComponent):
         Node(configuration,connectedComponent)
       {}
 
-      ContactSurface getContactSurfaceFromROM(const std::string& romName)
+      void setMap(const std::map<std::string, hpp::rbprm::SurfaceDatas_t> map)
       {
-        return ROMSurfacesMap_[romName];
+          ROMSurfacesMap_ = map;
       }
 
-      bool addContactSurfaceFromROM(const std::string& romName, ContactSurface contactSurface, bool replace=false)
+      hpp::rbprm::SurfaceData getContactSurfaceFromROM(const std::string& romName)
       {
-        bool success = ROMSurfacesMap_.insert(std::pair<char,int>(romName, contactSurface));
-        if(success==true)
-        {
-            numberOfContacts_++;
-        }
-        else if (replace==true)
-        {
-            ROMSurfacesMap_.find(romName)->second = contactSurface;
-            success = true;
-        }
-        else
-        {
-            hppDout(info, "ROM " << romName << " is already in the map. Please use replaceConctactSurfaceFromROM instead.");
-        }
-        return success;
+        hpp::rbprm::SurfaceDatas_t surfaces = ROMSurfacesMap_[romName];
+        return surfaces.front();
       }
 
-      ContactSurface addContactSurfaceFromROM(const std::string& romName, const CollisionObjectPtr_t& collisionObject, const geom::Point& normal, const geom::Point& contactPoint)
-      {
-        return addContactSurfaceFromROM(romName, ContactSurface(collisionObject, normal, contactPoint));
-      }
+      bool addContactSurfaceFromROM(const std::string& romName, hpp::rbprm::SurfaceDatas_t contactSurface);
 
       RbprmValidationReportPtr_t getReport(){
         return collisionReport_;
@@ -85,7 +69,7 @@ namespace hpp {
 
     private:
       int numberOfContacts_;
-      std::map<std::string, ContactSurface> ROMSurfacesMap_; //id Rom, support surface
+      std::map<std::string, hpp::rbprm::SurfaceDatas_t> ROMSurfacesMap_; //id Rom, support surface
       double score_;
       RbprmValidationReportPtr_t collisionReport_;
 

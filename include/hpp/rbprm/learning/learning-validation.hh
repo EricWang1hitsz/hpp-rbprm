@@ -25,8 +25,33 @@
 #include <hpp/rbprm/learning/GMM.hh>
 #include <hpp/rbprm/rbprm-validation.hh>
 
+# include <hpp/util/debug.hh>
+# include <hpp/rbprm/planner/rbprm-node.hh>
+# include <hpp/model/configuration.hh>
+#include <hpp/util/timer.hh>
+#include "utils/algorithms.h"
+#include <math.h>
+
 namespace hpp {
 namespace rbprm {
+
+struct SurfaceData{
+
+    SurfaceData():normal_(),centroid_(),collisionObject_(),intersection_()
+    {}
+
+    SurfaceData(geom::Point normal, geom::Point centroid, model::CollisionObjectPtr_t collisionObject, geom::T_Point intersection)
+        : normal_(normal),centroid_(centroid),collisionObject_(collisionObject),intersection_(intersection)
+    {}
+
+    geom::Point normal_;
+    geom::Point centroid_;
+    model::CollisionObjectPtr_t collisionObject_;
+    geom::T_Point intersection_;
+
+};
+
+typedef std::list<SurfaceData> SurfaceDatas_t;
 
 
 /// Exception thrown when a configuration is not within the bounds
