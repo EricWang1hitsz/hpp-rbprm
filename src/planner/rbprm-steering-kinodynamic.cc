@@ -65,11 +65,12 @@ namespace hpp{
       // get kinodynamic path from core::steeringMethod::Kinodynamic
       hppStartBenchmark(FIND_A_MAX);
       core::RbprmNodePtr_t node =  setSteeringMethodBounds(x,q2,false);
+      hppDout(notice,"end setBounds");
       if(!node)
         return core::PathPtr_t();
       hppStopBenchmark(FIND_A_MAX);
       hppDisplayBenchmark(FIND_A_MAX);
-      if((aMax_[0]+aMax_[1]) <= 0)
+      if((std::fabs(aMax_[0])+std::fabs(aMax_[1])) <= 0)
         return core::PathPtr_t();
       //return core::steeringMethod::Kinodynamic::impl_compute(*x->configuration(),q2);
       hppStartBenchmark(steering_kino);
@@ -185,7 +186,7 @@ namespace hpp{
         return core::PathPtr_t();
       hppStopBenchmark(FIND_A_MAX);
       hppDisplayBenchmark(FIND_A_MAX);
-      if((aMax_[0]+aMax_[1]) <= 0)
+      if((std::fabs(aMax_[0])+std::fabs(aMax_[1])) <= 0)
         return core::PathPtr_t();
       hppStartBenchmark(steering_kino);
       core::PathPtr_t path = core::steeringMethod::Kinodynamic::impl_compute(q1,*x->configuration());

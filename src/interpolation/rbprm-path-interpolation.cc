@@ -134,6 +134,12 @@ namespace hpp {
                                                         const model::value_type timeStep, const model::value_type initValue, const bool filterStates)
     {
         hppDout(notice,"Begin interpolate in path-interpolation, number of configs to test : "<<configs.size());
+        /*
+        std::ofstream fout;
+        fout.open("/local/fernbac/bench_iros18/bench_contactGeneration/candidates.log", std::fstream::out | std::fstream::app);
+        fout<<"BeginInterpolation "<<std::endl;
+        fout.close();
+        */
         int nbFailures = 0;
         size_t accIndex = robot_->device_->configSize() - robot_->device_->extraConfigSpace().dimension () + 3 ; // index of the start of the acceleration vector (of size 3), in the configuration vector
         hppDout(notice,"acceleration index : "<<accIndex);
@@ -190,7 +196,11 @@ if (nbFailures > 1)
     fout<<"failed."<<std::endl;
     fout.close();
     */
+    /*fout.open("/local/fernbac/bench_iros18/bench_contactGeneration/candidates.log", std::fstream::out | std::fstream::app);
+    fout<<"failed "<<std::endl;
+    fout.close();
     std::cout << "failed " << std::endl;
+    */
 #ifdef PROFILE
     watch.stop("complete generation");
     watch.add_to_count("planner failed", 1);
@@ -231,7 +241,11 @@ if (nbFailures > 1)
                 fout<<"failed, too much repositionning"<<std::endl;
                 fout.close();
                 */
+                /*fout.open("/local/fernbac/bench_iros18/bench_contactGeneration/candidates.log", std::fstream::out | std::fstream::app);
+                fout<<"failed "<<std::endl;
+                fout.close();
 				std::cout<<"failed, too much repositionning"<<std::endl;
+                */
 				#ifdef PROFILE
 					watch.stop("complete generation");
 					watch.add_to_count("planner failed", 1);
@@ -291,6 +305,10 @@ if (nbFailures > 1)
         std::ofstream fout;
         fout.open("/local/fernbac/bench_iros18/success/log_success.log",std::fstream::app);
         fout<<"Planner succeeded"<<std::endl;
+        fout.close();
+        */
+        /*fout.open("/local/fernbac/bench_iros18/bench_contactGeneration/candidates.log", std::fstream::out | std::fstream::app);
+        fout<<"succeed "<<std::endl;
         fout.close();
         */
         states = addGoalConfig(states);
