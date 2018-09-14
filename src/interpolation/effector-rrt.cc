@@ -423,6 +423,7 @@ BezierPath::create(endEffectorDevice,refEffectorMidBezier,refEffectorTakeoff->en
         hppDout(notice,"pos offset = "<<posOffset<<" ; jerk = "<<jerk<<" ; acc = "<<a_max_predefined<<" ; vel = "<<velOffset);
      }
 */
+/*
     void computePredefConstants(double dist_translation,double p_max,double p_min,double t_total,double &t_predef, double &posOffset, double &velOffset,double &a_max_predefined ){
         double timeMid= t_total - (2*t_predef);
 
@@ -436,7 +437,7 @@ BezierPath::create(endEffectorDevice,refEffectorMidBezier,refEffectorTakeoff->en
         posOffset = (1./120.) * ddjerk * t_predef * t_predef * t_predef* t_predef * t_predef;
         hppDout(notice,"pos offset = "<<posOffset<<" ; jerk = "<<jerk<<" ; acc = "<<a_max_predefined<<" ; vel = "<<velOffset);
      }
-
+*/
 /*
     void computePredefConstants(double dist_translation,double p_max,double p_min,double t_total,double &t_predef, double &posOffset, double &velOffset,double &a_max_predefined ){
        // double timeMid= t_total - (2*t_predef);
@@ -499,6 +500,11 @@ BezierPath::create(endEffectorDevice,refEffectorMidBezier,refEffectorTakeoff->en
     }
 */
 
+    void computePredefConstants(double dist_translation,double p_max,double p_min,double t_total,double &t_predef, double &posOffset, double &velOffset,double &a_max_predefined ){
+        double timeMid= (t_total - (2*t_predef))/2.;
+        posOffset = p_max / (1. + 4.*timeMid/t_predef + 6.*timeMid*timeMid/(t_predef*t_predef) - (timeMid*timeMid*timeMid)/(t_predef*t_predef*t_predef));
+    }
+
     core::PathPtr_t generateEndEffectorBezier(RbPrmFullBodyPtr_t fullbody, core::ProblemSolverPtr_t problemSolver, const PathPtr_t comPath,
     const State &startState, const State &nextState){
         JointPtr_t effector =  getEffector(fullbody, startState, nextState);
@@ -545,15 +551,15 @@ BezierPath::create(endEffectorDevice,refEffectorMidBezier,refEffectorTakeoff->en
             posOffset = 0.003; // was 0.004 (for 1.8second)
         }else{
             timeTakeoff = 0.3;
-            p_max = 0.05;
-            p_min = 0.01;
-            posOffset = 0.004;
+            p_max = 0.20;//0.05;
+            p_min = 0.08;
+            posOffset = 0.003;//0.015;//0.004;
         }
 
 
-        //computePredefConstants(dist_translation,p_max,p_min,totalTime,timeTakeoff,posOffset,velOffset,a_max_predefined);
-        velOffset = 0.;
-        a_max_predefined = 0.;
+        computePredefConstants(dist_translation,p_max,p_min,totalTime,timeTakeoff,posOffset,velOffset,a_max_predefined);
+        //velOffset = 0.;
+        //a_max_predefined = 0.;
 
 
         const double timeLanding = timeTakeoff;
@@ -682,10 +688,10 @@ buildPredefinedPath(endEffectorDevice,nextNormal,endConfig,posOffset,-velOffset,
         //a_max_predefined = 1.5;
 
 
-       // computePredefConstants(dist_translation,p_max,p_min,totalTime,timeTakeoff,posOffset,velOffset,a_max_predefined);
-        posOffset = 0.004;
-        velOffset = 0.;
-        a_max_predefined = 0.;
+        computePredefConstants(dist_translation,p_max,p_min,totalTime,timeTakeoff,posOffset,velOffset,a_max_predefined);
+        //posOffset = 0.004;
+        //velOffset = 0.;
+        //a_max_predefined = 0.;
 
 
         const double timeLanding = timeTakeoff;
