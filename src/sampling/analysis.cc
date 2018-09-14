@@ -273,7 +273,7 @@ namespace
           if(fabs(jointJacobian[4]) > 0.5){ // rot y
             weight[i_weight]=1;
           }else if(fabs(jointJacobian[5]) > 0.5){ // rot z
-              weight[i_weight]=10.;
+              weight[i_weight]=100.;
           }else{ // prismatic or rot x
               weight[i_weight]=100.;
           }
