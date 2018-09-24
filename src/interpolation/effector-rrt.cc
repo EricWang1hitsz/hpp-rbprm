@@ -676,8 +676,8 @@ buildPredefinedPath(endEffectorDevice,nextNormal,endConfig,posOffset,-velOffset,
 
        // const double timeTakeoff = totalTime*ratioTimeTakeOff; // percentage of the total time
         double timeTakeoff = 0.3; // it's a minimum time, it can be increased
-        const double p_max = 0.03; // offset for the higher point in the curve
-        const double p_min = 0.01; // min offset at the end of the predefined trajectory
+        const double p_max = 0.20; // offset for the higher point in the curve
+        const double p_min = 0.08; // min offset at the end of the predefined trajectory
 
         // values for hrp2 :
         /*double timeTakeoff = 0.1; // it's a minimum time, it can be increased //HRP2
