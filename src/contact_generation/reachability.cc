@@ -422,7 +422,7 @@ Result isReachableDynamic(const RbPrmFullBodyPtr_t& fullbody, State &previous, S
     #if STAT_TIMINGS
     // outputs timings results in file :
     std::ofstream file;
-    std::string path("/home/pfernbac/Documents/com_ineq_test/timings_logs.log");
+    std::string path("/local/fernbac/bench_iros18/bench/timing_hrp2_darpa.log");
     hppDout(notice,"print to file : "<<path);
     file.open(path.c_str(),std::ios_base::app);
     file<<"# new pair of states"<<std::endl;
@@ -455,6 +455,7 @@ Result isReachableDynamic(const RbPrmFullBodyPtr_t& fullbody, State &previous, S
     }
 
     hppStartBenchmark(IS_REACHABLE_DYNAMIC);
+    hppStartBenchmark(COMPUTE_DOUBLE_DESCRIPTION);
 
     // build ProblemData from states object and call solveOneStep()
     bezier_com_traj::ProblemData pData;
@@ -481,6 +482,10 @@ Result isReachableDynamic(const RbPrmFullBodyPtr_t& fullbody, State &previous, S
     centroidal_dynamics::Equilibrium coneNext = computeContactConeForState(fullbody,next,successConeCurrent);
     successCone = successCone && successConeCurrent;
     nextData.contactPhase_ = &coneNext;
+
+    hppStopBenchmark(COMPUTE_DOUBLE_DESCRIPTION);
+    hppDisplayBenchmark(COMPUTE_DOUBLE_DESCRIPTION);
+
 
     if(!successCone){
         return Result(UNABLE_TO_COMPUTE);
@@ -534,10 +539,10 @@ Result isReachableDynamic(const RbPrmFullBodyPtr_t& fullbody, State &previous, S
     VectorX times;
     double total_time = 0;
     const double time_increment = 0.05;
-    const double min_SS = 0.6;
-    const double max_SS = 1.6;
-    const double min_DS = 0.3;
-    const double max_DS = 1.5;
+    const double min_SS = 0.5;
+    const double max_SS = 1.99;
+    const double min_DS = 0.1;
+    const double max_DS = 1.99;
 
     /*
     const double time_increment = 0.1;
@@ -571,13 +576,14 @@ Result isReachableDynamic(const RbPrmFullBodyPtr_t& fullbody, State &previous, S
                                0.3 , 0.05, 0.15;
                         // hyq flat
 */
-            timings_matrix = MatrixXX(16,3);
+            timings_matrix = MatrixXX(17,3);
             timings_matrix <<
                               0.8 , 0.7, 0.8,
                               0.3 , 0.6, 0.3,
                               0.5 , 0.6, 0.5,
                               0.6 , 0.6, 0.6,
                               0.8 , 0.6, 0.8,
+                              1.0,0.8,0.8,
                             0.6, 1.2, 0.6,
                             1. , 1.2, 1.,
                             0.3 , 0.8, 0.3,
@@ -665,6 +671,7 @@ Result isReachableDynamic(const RbPrmFullBodyPtr_t& fullbody, State &previous, S
         timing_provided = true;
     }
 
+    //pData.representation_ = bezier_com_traj::FORCE;
 
     // loop over all possible timings :
     bool success(false);

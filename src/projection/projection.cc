@@ -175,7 +175,7 @@ ProjectionReport projectToRootPosition(hpp::rbprm::RbPrmFullBodyPtr_t fullBody, 
                                            const hpp::rbprm::State& currentState)
 {
     ProjectionReport res;
-    core::ConfigProjectorPtr_t proj = core::ConfigProjector::create(fullBody->device_,"proj", 1e-4, 40);
+    core::ConfigProjectorPtr_t proj = core::ConfigProjector::create(fullBody->device_,"proj", 1e-3, 500);
     CreateContactConstraints(fullBody, currentState, proj);
     CreateRootPosConstraint(fullBody, target, proj);
     model::Configuration_t configuration = currentState.configuration_;
@@ -375,10 +375,14 @@ ProjectionReport projectEffector(hpp::core::ConfigProjectorPtr_t proj, const hpp
 fcl::Transform3f computeProjectionMatrix(const hpp::rbprm::RbPrmFullBodyPtr_t& body, const hpp::rbprm::RbPrmLimbPtr_t& limb, const model::ConfigurationIn_t configuration,
                                          const fcl::Vec3f& normal, const fcl::Vec3f& position)
 {
+    hppDout(notice,"computeProjection matrice : normal = "<<normal);
     body->device_->currentConfiguration(configuration);
     body->device_->computeForwardKinematics();
     // the normal is given by the normal of the contacted object
+    hppDout(notice,"effector rot : "<<limb->effector_->currentTransformation().getRotation());
+    hppDout(notice,"limb normal : "<<limb->normal_);
     const fcl::Vec3f z = limb->effector_->currentTransformation().getRotation() * limb->normal_;
+    hppDout(notice,"z = "<<z);
     const fcl::Matrix3f alignRotation = tools::GetRotationMatrix(z,normal);
     hppDout(notice,"alignRotation : \n"<<alignRotation);
     const fcl::Matrix3f rotation = alignRotation * limb->effector_->currentTransformation().getRotation();
@@ -439,7 +443,7 @@ ProjectionReport projectToComPosition(hpp::rbprm::RbPrmFullBodyPtr_t fullBody, c
                                            const hpp::rbprm::State& currentState)
 {
     ProjectionReport res;
-    core::ConfigProjectorPtr_t proj = core::ConfigProjector::create(fullBody->device_,"proj", 1e-4, 1000);
+    core::ConfigProjectorPtr_t proj = core::ConfigProjector::create(fullBody->device_,"proj", 1e-3, 1000);
     CreateContactConstraints(fullBody, currentState, proj);
     CreateComPosConstraint(fullBody, target, proj);
    /* CreatePosturalTaskConstraint(fullBody,proj);
