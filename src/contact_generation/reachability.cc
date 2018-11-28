@@ -534,10 +534,10 @@ Result isReachableDynamic(const RbPrmFullBodyPtr_t& fullbody, State &previous, S
     VectorX times;
     double total_time = 0;
     const double time_increment = 0.05;
-    const double min_SS = 0.6;
-    const double max_SS = 1.6;
-    const double min_DS = 0.3;
-    const double max_DS = 1.5;
+    const double min_SS = 0.5;
+    const double max_SS = 1.99;
+    const double min_DS = 0.1;
+    const double max_DS = 1.99;
 
     /*
     const double time_increment = 0.1;
@@ -571,13 +571,14 @@ Result isReachableDynamic(const RbPrmFullBodyPtr_t& fullbody, State &previous, S
                                0.3 , 0.05, 0.15;
                         // hyq flat
 */
-            timings_matrix = MatrixXX(16,3);
+            timings_matrix = MatrixXX(17,3);
             timings_matrix <<
                               0.8 , 0.7, 0.8,
                               0.3 , 0.6, 0.3,
                               0.5 , 0.6, 0.5,
                               0.6 , 0.6, 0.6,
                               0.8 , 0.6, 0.8,
+                              1.0,0.8,0.8,
                             0.6, 1.2, 0.6,
                             1. , 1.2, 1.,
                             0.3 , 0.8, 0.3,
