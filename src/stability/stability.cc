@@ -119,7 +119,7 @@ namespace stability{
 
     Equilibrium initLibrary(const RbPrmFullBodyPtr_t fullbody)
     {
-        return Equilibrium(fullbody->device_->name(), fullbody->device_->mass(),4,SOLVER_LP_QPOASES,true,10,false);
+        return Equilibrium(fullbody->device_->name(), fullbody->device_->mass(),4,SOLVER_LP_QPOASES,true,500,false);
     }
 
     const std::size_t numContactPoints(const RbPrmLimbPtr_t& limb)
