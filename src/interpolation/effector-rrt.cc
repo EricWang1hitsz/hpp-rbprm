@@ -423,6 +423,7 @@ BezierPath::create(endEffectorDevice,refEffectorMidBezier,refEffectorTakeoff->en
         hppDout(notice,"pos offset = "<<posOffset<<" ; jerk = "<<jerk<<" ; acc = "<<a_max_predefined<<" ; vel = "<<velOffset);
      }
 */
+   /*
     void computePredefConstants(double dist_translation,double p_max,double p_min,double t_total,double &t_predef, double &posOffset, double &velOffset,double &a_max_predefined ){
         double timeMid= t_total - (2*t_predef);
 
@@ -436,6 +437,14 @@ BezierPath::create(endEffectorDevice,refEffectorMidBezier,refEffectorTakeoff->en
         posOffset = (1./120.) * ddjerk * t_predef * t_predef * t_predef* t_predef * t_predef;
         hppDout(notice,"pos offset = "<<posOffset<<" ; jerk = "<<jerk<<" ; acc = "<<a_max_predefined<<" ; vel = "<<velOffset);
      }
+
+    */
+    void computePredefConstants(double dist_translation,double p_max,double p_min,double t_total,double &t_predef, double &posOffset, double &velOffset,double &a_max_predefined ){
+        double timeMid= (t_total - (2*t_predef))/2.;
+        posOffset = p_max / (1. + 4.*timeMid/t_predef + 6.*timeMid*timeMid/(t_predef*t_predef) - (timeMid*timeMid*timeMid)/(t_predef*t_predef*t_predef));
+
+    }
+
 
 /*
     void computePredefConstants(double dist_translation,double p_max,double p_min,double t_total,double &t_predef, double &posOffset, double &velOffset,double &a_max_predefined ){
@@ -540,18 +549,18 @@ BezierPath::create(endEffectorDevice,refEffectorMidBezier,refEffectorTakeoff->en
            // p_max = 0.1;
            // p_min = 0.05;
             timeTakeoff = 0.3;
-            p_max = 0.03;
+            p_max = 0.08;
             p_min = 0.01;
-            posOffset = 0.003; // was 0.004 (for 1.8second)
+           // posOffset = 0.002; // was 0.004 (for 1.8second)
         }else{
             timeTakeoff = 0.3;
             p_max = 0.05;
             p_min = 0.01;
-            posOffset = 0.004;
+           // posOffset = 0.004;
         }
 
 
-        //computePredefConstants(dist_translation,p_max,p_min,totalTime,timeTakeoff,posOffset,velOffset,a_max_predefined);
+        computePredefConstants(dist_translation,p_max,p_min,totalTime,timeTakeoff,posOffset,velOffset,a_max_predefined);
         velOffset = 0.;
         a_max_predefined = 0.;
 
@@ -670,7 +679,7 @@ buildPredefinedPath(endEffectorDevice,nextNormal,endConfig,posOffset,-velOffset,
 
        // const double timeTakeoff = totalTime*ratioTimeTakeOff; // percentage of the total time
         double timeTakeoff = 0.3; // it's a minimum time, it can be increased
-        const double p_max = 0.03; // offset for the higher point in the curve
+        const double p_max = 0.08; // offset for the higher point in the curve // 0.06 for thesis demos
         const double p_min = 0.01; // min offset at the end of the predefined trajectory
 
         // values for hrp2 :
@@ -682,8 +691,8 @@ buildPredefinedPath(endEffectorDevice,nextNormal,endConfig,posOffset,-velOffset,
         //a_max_predefined = 1.5;
 
 
-       // computePredefConstants(dist_translation,p_max,p_min,totalTime,timeTakeoff,posOffset,velOffset,a_max_predefined);
-        posOffset = 0.004;
+        computePredefConstants(dist_translation,p_max,p_min,totalTime,timeTakeoff,posOffset,velOffset,a_max_predefined);
+        //posOffset = 0.004;
         velOffset = 0.;
         a_max_predefined = 0.;
 
