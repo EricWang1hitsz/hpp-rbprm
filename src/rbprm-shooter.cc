@@ -224,6 +224,12 @@ namespace
                                             const std::size_t shootLimit, const std::size_t displacementLimit)
     {
       unsigned int seed = (unsigned int)(time(NULL));
+      //seed = 1550165346; // slalom 2
+      //seed = 1550212863 ; // darpa 2
+      //seed = 1550214528 ; //darpa3
+      //seed = 1550215818 ; //darpa4
+      //seed = 1550223613 ; //darpaI_1
+      //seed = 1550224558; //darpaI_2
       srand (seed);
       hppDout(notice,"&&&&&& SEED = "<<seed);
       RbPrmShooter* ptr = new RbPrmShooter (robot, geometries, affordances,
