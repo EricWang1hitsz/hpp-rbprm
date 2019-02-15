@@ -307,6 +307,38 @@ namespace
       return 100-(sqrt(distance));
     }
 
+     double referenceConfigurationCustom(rbprm::RbPrmFullBodyPtr_t fullBody , const SampleDB& /*sampleDB*/, const sampling::Sample& sample/*, std::vector<value_type> weights*/){
+      // find limb name
+      rbprm::RbPrmLimbPtr_t limb = getLimbFromStartRank(sample.startRank_,fullBody);
+      pinocchio::DevicePtr_t device = fullBody->device_;
+      pinocchio::Configuration_t conf(device->currentConfiguration());
+      sampling::Load(sample,conf); // retrieve the configuration of the sample (only for the concerned limb)
+      //hppDout(notice,"Reference conf in analysis : "<<pinocchio::displayConfig(fullBody->referenceConfig()));
+      double distance = 0;
+      Configuration_t diff(device->numberDof());
+      Configuration_t weight = Configuration_t::Zero(limb->effector_.joint()->rankInVelocity() - limb->limb_->rankInVelocity()+1);
+      weight<<100.,1.,1.,0.,0.,0.;
+
+      //hppDout(notice,"Weight vector in reference analysis, for limb : "<<limb->limb_->name());
+      //hppDout(notice,""<<pinocchio::displayConfig(weight));
+      hpp::pinocchio::difference (device, conf, fullBody->referenceConfig(), diff);
+     // hppDout(notice,"Reference config in analysis : "<<pinocchio::displayConfig(fullBody->referenceConfig()));
+      // the difference vector depend on the index in the velocity vector, not in the configuration
+      // we only sum for the index of the current limb
+     // hppDout(notice,"ref config rank: "<<cit->second->limb_->rankInVelocity()<<" ; "<<cit->second->effector_->rankInVelocity());
+      for (size_type i = limb->limb_->rankInVelocity() ; i <= limb->effector_.joint()->rankInVelocity() ; ++i){
+        distance += (diff[i]*diff[i])*weight[i-limb->limb_->rankInVelocity()];
+      }
+      // This is an heuristic and not a cost, a null distance is the best result
+      // TODO : replace hardcoded value with the real max
+      // but it increase computation time, and the values will be normalized after anyways ..
+      //hppDout(notice,"distance to ref = "<<sqrt(distance));
+      if(sqrt(distance)>=100){
+        hppDout(error,"WARNING : max distance to config not big enough");
+      }
+      return 100-(sqrt(distance));
+    }
+
     double referenceConfiguration(rbprm::RbPrmFullBodyPtr_t fullBody , const SampleDB& sampleDB, const sampling::Sample& sample){
       std::vector<value_type> weights;
       weights.push_back(100.);
@@ -348,7 +380,7 @@ AnalysisFactory::AnalysisFactory(hpp::rbprm::RbPrmFullBodyPtr_t device)
     evaluate_.insert(std::make_pair("jointLimitsDistance", boost::bind(&distanceToLimits, boost::ref(device_), _1, _2)));
     evaluate_.insert(std::make_pair("ReferenceConfiguration", boost::bind(&referenceConfiguration, boost::ref(device_), _1, _2)));
     evaluate_.insert(std::make_pair("ReferenceConfigurationWeightX", boost::bind(&referenceConfigurationWeightX, boost::ref(device_), _1, _2)));
-
+    evaluate_.insert(std::make_pair("ReferenceConfigurationCustom", boost::bind(&referenceConfigurationCustom, boost::ref(device_), _1, _2)));
 
 }
 
