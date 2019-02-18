@@ -261,12 +261,11 @@ double DistanceToLimitHeuristic(const sampling::Sample& sample,
 HeuristicFactory::HeuristicFactory()
 {
     unsigned int seed =  (unsigned int) (time(NULL)) ;
-    //seed = 1550213019 ; //darpa 2
     //seed = 1550165354; // slalom 2
-    //seed = 1550214579 ; // darpa 3
-    //seed = 1550215849 ; //darpa 4
-    //seed = 1550223651 ; //darpaI_1
-    //seed = 1550224601 ; //darpaI_2
+    //seed = 1550239431 ; // plinth1
+    //seed = 1550352170; //darpa1
+    //seed =1550352866 ; //darpa2
+    //seed = 1550353802 ; //darpa3
     srand (seed);
     hppDout(notice,"SEED for heuristic = "<<seed);
     /*std::ofstream fout;

@@ -225,11 +225,11 @@ namespace
     {
       unsigned int seed = (unsigned int)(time(NULL));
       //seed = 1550165346; // slalom 2
-      //seed = 1550212863 ; // darpa 2
-      //seed = 1550214528 ; //darpa3
-      //seed = 1550215818 ; //darpa4
-      //seed = 1550223613 ; //darpaI_1
-      //seed = 1550224558; //darpaI_2
+      //seed = 1550239404 ; //plinth1
+      // seed = 1550352087 ; //darpa1
+      //seed = 1550352824 ; //darpa2
+      //seed = 1550353741 ; //darpa3
+
       srand (seed);
       hppDout(notice,"&&&&&& SEED = "<<seed);
       RbPrmShooter* ptr = new RbPrmShooter (robot, geometries, affordances,
