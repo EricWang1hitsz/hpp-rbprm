@@ -73,6 +73,7 @@ std::pair<MatrixX3, MatrixX3> loadConstraintsFromObj(const std::string& fileName
 
     // iterate over all faces : for each faces add a line in A : normal and a value in b : position of a vertice.dot(normal)
     size_t numFaces = polyhedron->num_tris;
+    hppDout(notice,"Num faces : "<<numFaces);
     size_t numIneq = numFaces;
     if(minDistance > 0){
         numIneq++;
@@ -98,8 +99,8 @@ std::pair<MatrixX3, MatrixX3> loadConstraintsFromObj(const std::string& fileName
         V.block<1,3>(numIneq-1,0) = Vector3(0,0,minDistance);
     }
     hppDout(notice,"End of loading kinematic constraints : ");
-    //hppDout(notice,"N : "<<N);
-    //hppDout(notice,"v : "<<V);
+    hppDout(notice,"N : "<<N.size());
+    hppDout(notice,"v : "<<V.size());
 
 
 
