@@ -317,7 +317,7 @@ namespace
       double distance = 0;
       Configuration_t diff(device->numberDof());
       Configuration_t weight = Configuration_t::Zero(limb->effector_.joint()->rankInVelocity() - limb->limb_->rankInVelocity()+1);
-      weight<<100.,1.,1.,0.,0.,0.;
+      weight<<1.,1.,1.,0.,0.,0.;
 
       //hppDout(notice,"Weight vector in reference analysis, for limb : "<<limb->limb_->name());
       //hppDout(notice,""<<pinocchio::displayConfig(weight));
