@@ -39,6 +39,7 @@ namespace hpp {
     /// can be parametrized.
     ///
     class RbPrmDevice;
+    //eric_wang: RbPrmDevicePtr_t, another name of boost::shared_ptr <RbPrmDevice>;
     typedef boost::shared_ptr <RbPrmDevice> RbPrmDevicePtr_t;
 
     class HPP_RBPRM_DLLAPI RbPrmDevice : public Device
