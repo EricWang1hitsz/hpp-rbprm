@@ -37,11 +37,15 @@ namespace hpp {
     /// Configurations are valid if the Device is collision free,
     /// but the robotRoms are in collision. Exact conditions for validation
     /// can be parametrized.
-    ///
+
+    //eric_wang: Collison free of the robot configuration and robotRoms are in collision;
+
     class RbPrmDevice;
+    
     //eric_wang: RbPrmDevicePtr_t, another name of boost::shared_ptr <RbPrmDevice>;
     typedef boost::shared_ptr <RbPrmDevice> RbPrmDevicePtr_t;
 
+    //eric_wang: macro
     class HPP_RBPRM_DLLAPI RbPrmDevice : public Device
     {
     public:
@@ -71,6 +75,7 @@ namespace hpp {
 
     public:
       /// Range Of Motion of the robot
+      //eric_wang: Range of Motion (ROM)
       const T_Rom robotRoms_;
 
     protected:

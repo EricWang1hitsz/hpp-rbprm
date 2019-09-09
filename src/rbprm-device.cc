@@ -21,9 +21,15 @@ namespace hpp {
 
     RbPrmDevicePtr_t RbPrmDevice::create (const std::string& name, DevicePtr_t& robotRom)
     {
+        //eric_wang: typedef std::map<std::string, DevicePtr_t> T_Rom;
         hpp::model::T_Rom roms;
         roms.insert(std::make_pair(robotRom->name(),robotRom));
+
+        //eric_wang: define a pointer object for class RbPrmDevice;
+        //eric_wang: initialization the object with class constructor function;
         RbPrmDevice* rbprmDevice = new RbPrmDevice(name, roms);
+        //eric_wang： boost::shared_ptr <RbPrmDevice> res (rbprmDevice);
+        //eric_wang: create a pointer "res" pointing to the class object "rbprmDevice";
         RbPrmDevicePtr_t res (rbprmDevice);
         res->init (res);
         return res;
@@ -60,6 +66,7 @@ namespace hpp {
           (*q)[1] = configuration[i];
 
         // don't send extra config to robotRoms
+        //eric_wang: typedef std::map<std::string, DevicePtr_t> T_Rom;
         for(hpp::model::T_Rom::const_iterator cit = robotRoms_.begin();
             cit != robotRoms_.end(); ++cit)
         {
@@ -68,6 +75,7 @@ namespace hpp {
         return Device::currentConfiguration(configuration);
     }
 
+    //eric_wang: constructor function;
     RbPrmDevice::RbPrmDevice (const std::string& name, const hpp::model::T_Rom &robotRoms)
         : Device(name)
         , robotRoms_(robotRoms)
